@@ -50,38 +50,36 @@ if(WITH_EIGEN AND NOT HAVE_EIGEN)
         INTERFACE_INCLUDE_DIRECTORIES
     )
   else()
-    find_path(EIGEN_INCLUDE_PATH "Eigen/Core"
-              PATHS /usr/local /opt /usr $ENV{EIGEN_ROOT}/include ENV ProgramFiles ENV ProgramW6432
-              PATH_SUFFIXES include/eigen3 include/eigen2 Eigen/include/eigen3 Eigen/include/eigen2
-              DOC "The path to Eigen3/Eigen2 headers"
-              CMAKE_FIND_ROOT_PATH_BOTH)
-  endif()
+    find_package(Eigen3 QUIET)
 
-  if(Eigen3_FOUND)
-    if(TARGET Eigen3::Eigen)
-      # Use Eigen3 imported target if possible
-      list(APPEND OPENCV_LINKER_LIBS Eigen3::Eigen)
-      set(HAVE_EIGEN 1)
-    else()
-      if(DEFINED EIGEN3_INCLUDE_DIRS)
-        set(EIGEN_INCLUDE_PATH ${EIGEN3_INCLUDE_DIRS})
+    if(Eigen3_FOUND)
+      if(TARGET Eigen3::Eigen)
+        # Use Eigen3 imported target if possible
+        list(APPEND OPENCV_LINKER_LIBS Eigen3::Eigen)
         set(HAVE_EIGEN 1)
-      elseif(DEFINED EIGEN3_INCLUDE_DIR)
-        set(EIGEN_INCLUDE_PATH ${EIGEN3_INCLUDE_DIR})
-        set(HAVE_EIGEN 1)
+      else()
+        if(DEFINED EIGEN3_INCLUDE_DIRS)
+          set(EIGEN_INCLUDE_PATH ${EIGEN3_INCLUDE_DIRS})
+          set(HAVE_EIGEN 1)
+        elseif(DEFINED EIGEN3_INCLUDE_DIR)
+          set(EIGEN_INCLUDE_PATH ${EIGEN3_INCLUDE_DIR})
+          set(HAVE_EIGEN 1)
+        endif()
+      endif()
+      if(HAVE_EIGEN)
+        if(DEFINED EIGEN3_WORLD_VERSION)  # CMake module
+          set(EIGEN_WORLD_VERSION ${EIGEN3_WORLD_VERSION})
+          set(EIGEN_MAJOR_VERSION ${EIGEN3_MAJOR_VERSION})
+          set(EIGEN_MINOR_VERSION ${EIGEN3_MINOR_VERSION})
+        else()  # Eigen config file
+          set(EIGEN_WORLD_VERSION ${EIGEN3_VERSION_MAJOR})
+          set(EIGEN_MAJOR_VERSION ${EIGEN3_VERSION_MINOR})
+          set(EIGEN_MINOR_VERSION ${EIGEN3_VERSION_PATCH})
+        endif()
       endif()
     endif()
-    if(HAVE_EIGEN)
-      if(DEFINED EIGEN3_WORLD_VERSION)  # CMake module
-        set(EIGEN_WORLD_VERSION ${EIGEN3_WORLD_VERSION})
-        set(EIGEN_MAJOR_VERSION ${EIGEN3_MAJOR_VERSION})
-        set(EIGEN_MINOR_VERSION ${EIGEN3_MINOR_VERSION})
-      else()  # Eigen config file
-        set(EIGEN_WORLD_VERSION ${EIGEN3_VERSION_MAJOR})
-        set(EIGEN_MAJOR_VERSION ${EIGEN3_VERSION_MINOR})
-        set(EIGEN_MINOR_VERSION ${EIGEN3_VERSION_PATCH})
-      endif()
-    endif()
+
+
   endif()
 
   if(NOT HAVE_EIGEN)
